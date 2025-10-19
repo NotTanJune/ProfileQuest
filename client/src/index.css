@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-main text-accent antialiased;
+}
+
+/* Accessible glass: subtle translucency over solid bg */
+.glass {
+  backdrop-filter: saturate(120%) blur(10px);
+  -webkit-backdrop-filter: saturate(120%) blur(10px);
+  @apply bg-white/70 shadow-glass rounded-2xl border border-black/5;
+}
+
+.nav-link {
+  @apply text-accent transition-colors px-3 py-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 cursor-pointer bg-transparent hover:bg-accent/30;
+}
+
+.btn-primary {
+  @apply bg-accent text-white font-medium px-4 py-2 rounded-xl hover:bg-accent/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40;
+}
+
+.btn-ghost {
+  @apply bg-transparent text-accent hover:text-accentAlt focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40;
+}
+
+.input {
+  @apply w-full bg-white border border-black/10 rounded-xl px-3 py-2 text-accent placeholder-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/30;
+}
+
+.card {
+  @apply glass p-6 text-accent;
+}
+
+.heading {
+  @apply text-3xl md:text-4xl font-semibold tracking-tight text-accent;
+}
+
+.subheading {
+  @apply text-accent/80;
+}
+
+
+/* Animations for quest completion */
+.fade-green {
+  animation: fadeGreen 600ms ease-in-out forwards;
+}
+
+@keyframes fadeGreen {
+  0% { background-color: theme('colors.accent'); color: white; opacity: 1; }
+  100% { background-color: theme('colors.accentAlt'); color: white; opacity: 1; }
+}
+
+.rise-fade {
+  animation: riseFade 800ms ease-out forwards;
+}
+
+@keyframes riseFade {
+  0% { transform: translateY(0); opacity: 1; color: theme('colors.accent'); }
+  100% { transform: translateY(-12px); opacity: 0; color: theme('colors.accentAlt'); }
+}
+
+.smooth-width {
+  transition: width 600ms ease-in-out;
+}
+
+

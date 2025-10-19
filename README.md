@@ -1,4 +1,4 @@
-## Profile Quest — High‑level README
+# Profile Quest
 
 ## Overview
 

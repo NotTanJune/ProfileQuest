@@ -13,4 +13,4 @@ yarn-error.log*
 /.cursor/
 /.agent-tools/
 /.vscode/
-
+.github/

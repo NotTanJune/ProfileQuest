@@ -19,7 +19,7 @@ useEffect(() => {
       try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
       if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
       if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'http://localhost:5050';
+      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
 
       const resAvail = await axios.get(`${apiBase}/api/quests`, { params: { userId: user.id, status: 'available' } });
       if (!isMounted) return;
@@ -41,7 +41,7 @@ useEffect(() => {
       try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
       if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
       if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'http://localhost:5050';
+      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       const userId = user?.id || 'local-user';
       const res = await axios.post(`${apiBase}/api/quests/complete`, { userId, title: q.title, xpReward: q.xp_reward });
       const prof = res.data?.profile;
@@ -68,7 +68,7 @@ useEffect(() => {
       try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
       if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
       if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'http://localhost:5050';
+      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       const userId = user?.id || 'local-user';
       await axios.post(`${apiBase}/api/quests/delete`, { userId, title });
       setQuests(list => list.filter(q => q.title !== title));
@@ -86,7 +86,7 @@ useEffect(() => {
       try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
       if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
       if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'http://localhost:5050';
+      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       const userId = user?.id || 'local-user';
       const personaRes = await axios.get(`${apiBase}/api/persona`, { params: { userId } });
       const personaType = personaRes.data?.persona?.persona_type || 'Software Developer';

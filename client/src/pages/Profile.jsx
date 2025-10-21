@@ -19,7 +19,7 @@ export default function Profile() {
         try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
         if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
         if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'http://localhost:5050';
+        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
         const res = await axios.get(`${apiBase}/api/progress`, { params: { userId: user.id } });
         if (!isMounted) return;
         const p = res.data?.progress || {};
@@ -46,7 +46,7 @@ export default function Profile() {
         try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
         if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
         if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'http://localhost:5050';
+        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
         const res = await axios.get(`${apiBase}/api/persona`, { params: { userId: user.id } });
         if (!isMounted) return;
         setPersona(res.data?.persona || null);

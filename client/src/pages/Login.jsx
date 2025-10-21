@@ -34,7 +34,7 @@ export default function Login() {
     setError('');
     setSuccess('');
     try {
-      const apiBase = getApiBase() || 'http://localhost:5050';
+      const apiBase = getApiBase() || 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       if (mode === 'login') {
         const r = await axios.post(`${apiBase}/api/auth/login`, { email, password });
         const token = r.data?.token;

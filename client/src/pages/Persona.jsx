@@ -34,7 +34,7 @@ export default function Persona() {
         apiBase = window.__API_BASE_URL__ || '';
       }
       if (!apiBase) {
-        apiBase = 'http://localhost:5050';
+        apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       }
       const res = await axios.post(`${apiBase}/api/persona/generate`, {
         currentRole,
@@ -76,7 +76,7 @@ export default function Persona() {
       try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
       if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
       if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'http://localhost:5050';
+      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       const promptMeta = { currentRole, proficiency, interests, strengths, goals };
       const r = await axios.post(`${apiBase}/api/persona/generate`, {
         currentRole,

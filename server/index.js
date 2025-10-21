@@ -844,7 +844,7 @@ Make sure it looks like a unicode emoji`;
 function attemptListen(port, maxAttempts = 5) {
   const server = app
     .listen(port, () => {
-      console.log(`ProfileQuest API listening on http://localhost:${port}`);
+      console.log(`ProfileQuest API listening on https://profilequest-3feeae1dd6a1.herokuapp.com:${port}`);
     })
     .on('error', (err) => {
       if (err.code === 'EADDRINUSE' && maxAttempts > 0) {

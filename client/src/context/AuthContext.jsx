@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
     }
     async function loadMe(token) {
       try {
-        const apiBase = getApiBase() || 'http://localhost:5050';
+        const apiBase = getApiBase() || 'https://profilequest-3feeae1dd6a1.herokuapp.com';
         const res = await axios.get(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
         const u = res.data?.user || null;
         if (!u) return null;
@@ -73,7 +73,7 @@ export function AuthProvider({ children }) {
   async function refreshSession() {
     const token = localStorage.getItem('pq_token');
     if (!token) { setSession(null); return null; }
-    const apiBase = (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_BASE_URL || '') : '') || (typeof process !== 'undefined' ? (process.env?.VITE_API_BASE_URL || '') : '') || 'http://localhost:5050';
+    const apiBase = (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_BASE_URL || '') : '') || (typeof process !== 'undefined' ? (process.env?.VITE_API_BASE_URL || '') : '') || 'https://profilequest-3feeae1dd6a1.herokuapp.com';
     try {
       const res = await axios.get(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       const u = res.data?.user || null;

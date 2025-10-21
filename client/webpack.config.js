@@ -36,7 +36,7 @@ export default {
     proxy: [
       {
         context: ['/api'],
-        target: 'http://localhost:5050',
+        target: 'https://profilequest-3feeae1dd6a1.herokuapp.com',
         changeOrigin: true,
         secure: false
       }
@@ -72,7 +72,7 @@ export default {
   plugins: [
     new HtmlWebpackPlugin({ template: 'public/index.html' }),
     new webpack.DefinePlugin({
-      'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || 'http://localhost:5050')
+      'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || 'https://profilequest-3feeae1dd6a1.herokuapp.com')
     })
   ]
 };

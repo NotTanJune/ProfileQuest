@@ -96,7 +96,7 @@ export default function Dashboard() {
     }
     loadXpHistory();
     return () => { isMounted = false; };
-  }, [user?.id, xpRange]);
+  }, [user?.id, xpRange, xpState.xp, xpState.level]);
 
   // Drive forward-only animation on level-up with overflow handling
   useEffect(() => {
@@ -154,6 +154,11 @@ export default function Dashboard() {
     async function loadPersona() {
       if (!user?.id) return;
       try {
+        // Try cached persona for instant UI then refresh
+        try {
+          const cached = JSON.parse(localStorage.getItem('pq_persona') || 'null');
+          if (cached) { setPersona(cached); setAvatar(cached.avatar || ''); setPersonaLoaded(true); }
+        } catch {}
         let apiBase = '';
         try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
         if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
@@ -161,8 +166,10 @@ export default function Dashboard() {
         if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
         const res = await axios.get(`${apiBase}/api/persona`, { params: { userId: user.id } });
         if (!isMounted) return;
-        setPersona(res.data?.persona || null);
-        setAvatar(res.data?.persona?.avatar || '');
+        const remote = res.data?.persona || null;
+        setPersona(remote);
+        setAvatar(remote?.avatar || '');
+        try { if (remote) localStorage.setItem('pq_persona', JSON.stringify(remote)); } catch {}
         setPersonaLoaded(true);
       } catch (e) {
         // ignore
@@ -395,22 +402,28 @@ export default function Dashboard() {
                     ))}
                   </div>
                 </div>
-                <div className="mt-2 h-56">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={xpSeries} margin={{ top: 10, right: 24, bottom: 12, left: 28 }}>
-                      <CartesianGrid stroke="rgba(87,73,100,0.25)" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} interval={0} padding={{ left: 8, right: 8 }} />
-                      <YAxis tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} allowDecimals={false} width={46} />
-                      <Tooltip
-                        cursor={{ stroke: 'rgba(255,218,179,0.35)', strokeWidth: 1 }}
-                        contentStyle={{ background: '#221B29', border: '1px solid rgba(255,218,179,0.15)', borderRadius: 12, color: '#E0C9C9' }}
-                        labelStyle={{ color: '#E0C9C9' }}
-                        itemStyle={{ color: '#E0C9C9' }}
-                      />
-                      <Line type="monotone" dataKey="xp" name="XP" stroke="#3E334B" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                {xpSeries.some(p => p.xp > 0) ? (
+                  <div className="mt-2 h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={xpSeries} margin={{ top: 10, right: 24, bottom: 12, left: 28 }}>
+                        <CartesianGrid stroke="rgba(87,73,100,0.25)" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} interval={0} padding={{ left: 8, right: 8 }} />
+                        <YAxis tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} allowDecimals={false} width={46} />
+                        <Tooltip
+                          cursor={{ stroke: 'rgba(255,218,179,0.35)', strokeWidth: 1 }}
+                          contentStyle={{ background: '#221B29', border: '1px solid rgba(255,218,179,0.15)', borderRadius: 12, color: '#E0C9C9' }}
+                          labelStyle={{ color: '#E0C9C9' }}
+                          itemStyle={{ color: '#E0C9C9' }}
+                        />
+                        <Line type="monotone" dataKey="xp" name="XP" stroke="#3E334B" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="mt-2 h-56 flex items-center justify-end pr-2">
+                    <div className="text-accent/60 text-sm">No XP yet — complete quests to start your journey.</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -451,22 +464,28 @@ export default function Dashboard() {
                       ))}
                     </div>
                   </div>
-                  <div className="mt-2 h-56">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={xpSeries} margin={{ top: 10, right: 24, bottom: 12, left: 28 }}>
-                        <CartesianGrid stroke="rgba(87,73,100,0.25)" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} interval={0} padding={{ left: 8, right: 8 }} />
-                        <YAxis tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} allowDecimals={false} width={46} />
-                      <Tooltip
-                        cursor={{ stroke: 'rgba(255,218,179,0.35)', strokeWidth: 1 }}
-                        contentStyle={{ background: '#221B29', border: '1px solid rgba(255,218,179,0.15)', borderRadius: 12, color: '#E0C9C9' }}
-                        labelStyle={{ color: '#E0C9C9' }}
-                        itemStyle={{ color: '#E0C9C9' }}
-                      />
-                        <Line type="monotone" dataKey="xp" name="XP" stroke="#3E334B" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {xpSeries.some(p => p.xp > 0) ? (
+                    <div className="mt-2 h-56">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={xpSeries} margin={{ top: 10, right: 24, bottom: 12, left: 28 }}>
+                          <CartesianGrid stroke="rgba(87,73,100,0.25)" vertical={false} />
+                          <XAxis dataKey="name" tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} interval={0} padding={{ left: 8, right: 8 }} />
+                          <YAxis tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} allowDecimals={false} width={46} />
+                        <Tooltip
+                          cursor={{ stroke: 'rgba(255,218,179,0.35)', strokeWidth: 1 }}
+                          contentStyle={{ background: '#221B29', border: '1px solid rgba(255,218,179,0.15)', borderRadius: 12, color: '#E0C9C9' }}
+                          labelStyle={{ color: '#E0C9C9' }}
+                          itemStyle={{ color: '#E0C9C9' }}
+                        />
+                          <Line type="monotone" dataKey="xp" name="XP" stroke="#3E334B" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="mt-2 h-56 flex items-center justify-end pr-2">
+                      <div className="text-accent/60 text-sm">No XP yet — complete quests to start your journey.</div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

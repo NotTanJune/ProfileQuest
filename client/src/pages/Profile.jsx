@@ -42,6 +42,11 @@ export default function Profile() {
     async function loadPersona() {
       if (!user?.id) return;
       try {
+        // Immediate avatar/persona from cache for instant display
+        try {
+          const cached = JSON.parse(localStorage.getItem('pq_persona') || 'null');
+          if (cached) { setPersona(cached); setAvatar(cached.avatar || ''); }
+        } catch {}
         let apiBase = '';
         try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
         if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
@@ -49,8 +54,10 @@ export default function Profile() {
         if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
         const res = await axios.get(`${apiBase}/api/persona`, { params: { userId: user.id } });
         if (!isMounted) return;
-        setPersona(res.data?.persona || null);
-        setAvatar(res.data?.persona?.avatar || '');
+        const remote = res.data?.persona || null;
+        setPersona(remote);
+        setAvatar(remote?.avatar || '');
+        try { if (remote) localStorage.setItem('pq_persona', JSON.stringify(remote)); } catch {}
       } catch {}
     }
     loadPersona();
@@ -73,7 +80,7 @@ export default function Profile() {
         <div className="flex items-center gap-4">
           <div>
             {avatar ? (
-              <img src={avatar} alt="Avatar" width="128" height="128" className="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover border border-black/10" />
+              <img src={avatar} alt="Avatar" width="1024" height="1024" className="w-[256px] h-[256px] md:w-[320px] md:h-[320px] rounded-xl object-contain border border-black/10 bg-surface" />
             ) : (
               <div className="text-5xl">🧭</div>
             )}

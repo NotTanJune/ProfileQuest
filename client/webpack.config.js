@@ -1,6 +1,7 @@
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 import dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
@@ -71,6 +72,11 @@ export default {
   },
   plugins: [
     new HtmlWebpackPlugin({ template: 'public/index.html' }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'public', to: '.', filter: (p) => !p.endsWith('index.html') }
+      ]
+    }),
     new webpack.DefinePlugin({
       'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || 'https://profilequest-3feeae1dd6a1.herokuapp.com')
     })

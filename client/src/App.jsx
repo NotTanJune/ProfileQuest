@@ -37,7 +37,7 @@ export default function App() {
     <AuthProvider>
       <div className="min-h-screen">
         {!hideNavbar && <Navbar />}
-        <Suspense fallback={<div className="p-8 text-accent/70">Loading...</div>}>
+        <Suspense fallback={null}>
           <AnimatePresence mode="wait" initial={false}>
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<Page><Home /></Page>} />

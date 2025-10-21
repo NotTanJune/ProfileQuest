@@ -15,7 +15,7 @@
     "build": "yarn workspace profilequest-client build",
     "start": "node server/index.js",
     "heroku-postbuild": "yarn workspace profilequest-client build",
-    "postinstall": "yarn install --ignore-engines || true"
+    "postinstall": "echo 'Skipping postinstall'"
   },
   "dependencies": {},
   "devDependencies": {

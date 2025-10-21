@@ -65,10 +65,16 @@ export default function Login() {
       }
       // For login mode, we returned earlier to let auth context redirect
     } catch (err) {
+      const status = err?.response?.status;
       const message = err?.response?.data?.error || err?.message || 'Something went wrong';
       if (/Invalid/i.test(message) && mode === 'login') {
         setMode('signup');
         setError('No account found. Create an account below.');
+      } else if ((status === 409 || /already in use/i.test(message)) && mode === 'signup') {
+        // Email already exists -> switch to login seamlessly
+        setMode('login');
+        setSuccess('');
+        setError('Account already exists, please login');
       } else {
         setError(message);
       }

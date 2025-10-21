@@ -11,6 +11,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Groq from 'groq-sdk';
 import { GoogleGenAI } from '@google/genai';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
 const BASE_PORT = parseInt(process.env.PORT || '5000', 10);
@@ -855,6 +857,22 @@ function attemptListen(port, maxAttempts = 5) {
     });
   return server;
 }
+
+// Serve client build (SPA) in production
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDist = path.resolve(__dirname, '..', 'client', 'dist');
+app.use(express.static(clientDist));
+
+// Fallback to index.html for client-side routed paths
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found' });
+  try {
+    return res.sendFile(path.join(clientDist, 'index.html'));
+  } catch {
+    return res.status(404).send('Not found');
+  }
+});
 
 attemptListen(BASE_PORT);
 

@@ -13,8 +13,9 @@
     "server": "yarn workspace profilequest-server dev",
     "client": "yarn workspace profilequest-client dev",
     "build": "yarn workspace profilequest-client build",
-    "start": "concurrently \"yarn workspace profilequest-server start\" \"yarn workspace profilequest-client start\"",
-    "postinstall": "echo 'Using Yarn workspaces; no root postinstall.'"
+    "start": "node server/index.js",
+    "heroku-postbuild": "yarn workspace profilequest-client build",
+    "postinstall": "yarn install --ignore-engines || true"
   },
   "dependencies": {},
   "devDependencies": {

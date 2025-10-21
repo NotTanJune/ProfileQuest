@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import axios from 'axios';
 
 const AuthContext = createContext(null);
 
@@ -9,69 +9,83 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null); // {name, level, xp}
 
   useEffect(() => {
-    async function hydrateFromAuth(s) {
-      if (!s?.user) {
-        setProfile(null);
-        return;
-      }
-      let authUser = null;
+    function getApiBase() {
+      try { return import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
+      return (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
+    }
+    async function loadMe(token) {
       try {
-        const { data: userData } = await supabase.auth.getUser();
-        authUser = userData?.user;
-      } catch (e) {
-        console.error('getUser failed', e);
-      }
-      // Fetch profile row from Supabase (name/level/xp) if available
-      let remoteProfile = null;
-      try {
-        if (authUser?.id) {
-          const { data: profRow } = await supabase
-            .from('profiles')
-            .select('name, level, xp, next_level_xp')
-            .eq('id', authUser.id)
-            .maybeSingle();
-          remoteProfile = profRow || null;
+        const apiBase = getApiBase() || 'http://localhost:5050';
+        const res = await axios.get(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const u = res.data?.user || null;
+        if (!u) return null;
+        const storedProfileRaw = localStorage.getItem('pq_profile');
+        const storedProfile = storedProfileRaw ? JSON.parse(storedProfileRaw) : {};
+        const merged = {
+          name: u.name || storedProfile.name || (u.email ? u.email.split('@')[0] : 'Adventurer'),
+          level: storedProfile.level || 1,
+          xp: storedProfile.xp || 0,
+          nextLevelXp: storedProfile.nextLevelXp || 100,
+        };
+        setProfile(merged);
+        localStorage.setItem('pq_profile', JSON.stringify(merged));
+        return u;
+      } catch { return null; }
+    }
+
+    async function refreshFromToken() {
+      const token = localStorage.getItem('pq_token');
+      if (token) {
+        const me = await loadMe(token);
+        if (me) {
+          setSession({ user: { id: me.id, email: me.email, name: me.name } });
+          return me;
         }
-      } catch (_) {}
-      const storedProfileRaw = localStorage.getItem('pq_profile');
-      const storedProfile = storedProfileRaw ? JSON.parse(storedProfileRaw) : {};
-      const resolvedName = (remoteProfile?.name && String(remoteProfile.name)) || (authUser?.user_metadata?.name && String(authUser.user_metadata.name)) || storedProfile.name || (authUser?.email ? authUser.email.split('@')[0] : '') || 'Adventurer';
-      const merged = {
-        name: resolvedName,
-        level: (remoteProfile?.level ?? storedProfile.level) || 1,
-        xp: (remoteProfile?.xp ?? storedProfile.xp) || 0,
-        nextLevelXp: (remoteProfile?.next_level_xp ?? storedProfile.nextLevelXp) || 100,
-      };
-      setProfile(merged);
-      localStorage.setItem('pq_profile', JSON.stringify(merged));
+      }
+      setSession(null);
+      return null;
     }
 
     let isMounted = true;
     (async () => {
       try {
-        const { data } = await supabase.auth.getSession();
         if (!isMounted) return;
-        setSession(data.session);
-        await hydrateFromAuth(data.session);
-      } catch (e) {
-        console.error('getSession failed', e);
+        await refreshFromToken();
       } finally {
         if (isMounted) setLoading(false);
       }
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, s) => {
-      if (!isMounted) return;
-      setSession(s);
-      await hydrateFromAuth(s);
-    });
+    function onAuthChanged() { void refreshFromToken(); }
+    function onStorage(e) { if (e?.key === 'pq_token') void refreshFromToken(); }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pq_auth_changed', onAuthChanged);
+      window.addEventListener('storage', onStorage);
+    }
     return () => {
-      isMounted = false;
-      sub.subscription?.unsubscribe?.();
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('pq_auth_changed', onAuthChanged);
+        window.removeEventListener('storage', onStorage);
+      }
     };
   }, []);
 
-  const value = { session, user: session?.user || null, profile, setProfile, loading };
+  async function refreshSession() {
+    const token = localStorage.getItem('pq_token');
+    if (!token) { setSession(null); return null; }
+    const apiBase = (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_BASE_URL || '') : '') || (typeof process !== 'undefined' ? (process.env?.VITE_API_BASE_URL || '') : '') || 'http://localhost:5050';
+    try {
+      const res = await axios.get(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const u = res.data?.user || null;
+      if (u) setSession({ user: { id: u.id, email: u.email, name: u.name } });
+      return u;
+    } catch {
+      setSession(null);
+      return null;
+    }
+  }
+
+  const value = { session, user: session?.user || null, profile, setProfile, loading, refreshSession };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

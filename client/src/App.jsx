@@ -1,15 +1,16 @@
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
-import Home from './pages/Home.jsx';
-import Login from './pages/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import Persona from './pages/Persona.jsx';
-import Quests from './pages/Quests.jsx';
-import Profile from './pages/Profile.jsx';
-import Duels from './pages/Duels.jsx';
+import { lazy, Suspense } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+const Home = lazy(() => import('./pages/Home.jsx'));
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const Persona = lazy(() => import('./pages/Persona.jsx'));
+const Quests = lazy(() => import('./pages/Quests.jsx'));
+const Profile = lazy(() => import('./pages/Profile.jsx'));
+// const Duels = lazy(() => import('./pages/Duels.jsx'));
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { useEffect } from 'react';
-import { supabase } from './lib/supabase';
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -22,20 +23,34 @@ function Protected({ children }) {
 export default function App() {
   const location = useLocation();
   const hideNavbar = location.pathname === '/' || location.pathname.startsWith('/login') || location.pathname === '/logout';
+  const Page = ({ children }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
   return (
     <AuthProvider>
       <div className="min-h-screen">
         {!hideNavbar && <Navbar />}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-          <Route path="/persona" element={<Protected><Persona /></Protected>} />
-          <Route path="/quests" element={<Protected><Quests /></Protected>} />
-          <Route path="/profile" element={<Protected><Profile /></Protected>} />
-          <Route path="/duels" element={<Protected><Duels /></Protected>} />
-        </Routes>
+        <Suspense fallback={<div className="p-8 text-accent/70">Loading...</div>}>
+          <AnimatePresence mode="wait" initial={false}>
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<Page><Home /></Page>} />
+              <Route path="/login" element={<Page><Login /></Page>} />
+              <Route path="/logout" element={<Logout />} />
+              <Route path="/dashboard" element={<Protected><Page><Dashboard /></Page></Protected>} />
+              <Route path="/persona" element={<Protected><Page><Persona /></Page></Protected>} />
+              <Route path="/quests" element={<Protected><Page><Quests /></Page></Protected>} />
+              <Route path="/profile" element={<Protected><Page><Profile /></Page></Protected>} />
+              {/* <Route path="/duels" element={<Protected><Page><Duels /></Page></Protected>} /> */}
+            </Routes>
+          </AnimatePresence>
+        </Suspense>
       </div>
     </AuthProvider>
   );
@@ -51,20 +66,17 @@ function Logout() {
       }
     };
 
-    // Aggressively clear Supabase auth storage to avoid stale sessions
+    // Aggressively clear any auth storage to avoid stale sessions
     try {
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
         if (!k) continue;
-        if (/^(sb-|supabase\.|gotrue)/i.test(k)) {
-          localStorage.removeItem(k);
-        }
+        if (/^(sb-|supabase\.|gotrue)/i.test(k)) localStorage.removeItem(k);
       }
+      localStorage.removeItem('pq_token');
       localStorage.removeItem('pq_profile');
     } catch {}
 
-    // Fire signOut in background, then redirect immediately
-    try { supabase.auth.signOut(); } catch {}
     goLogin();
   }, [navigate]);
   return null;

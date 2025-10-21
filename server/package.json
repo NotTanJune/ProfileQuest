@@ -9,12 +9,18 @@
   },
   "dependencies": {
     "@google/genai": "^1.25.0",
-    "@supabase/supabase-js": "^2.45.4",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.1.5",
+    "express-slow-down": "^2.0.3",
     "groq-sdk": "^0.5.0",
-    "pg": "^8.11.5"
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.0",
+    "hpp": "^0.2.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

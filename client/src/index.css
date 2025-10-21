@@ -3,22 +3,37 @@
 @tailwind utilities;
 
 body {
+  font-family: 'Fraunces', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
   @apply bg-main text-accent antialiased;
 }
+
+/* Use readable defaults; keep ligatures enabled for Fraunces */
 
 /* Accessible glass: subtle translucency over solid bg */
 .glass {
   backdrop-filter: saturate(120%) blur(10px);
   -webkit-backdrop-filter: saturate(120%) blur(10px);
-  @apply bg-white/70 shadow-glass rounded-2xl border border-black/5;
+  @apply bg-surfaceAlt/70 shadow-glass rounded-2xl border border-black/5;
+}
+
+/* Frosted glass specifically tuned for the navbar */
+.glass-nav {
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  /* Accent-tinted translucent background; tweak alpha for strength */
+  background-color: rgba(87, 73, 100, 0.9);
+  /* Subtle outline matching existing aesthetic */
+  border: 1px solid rgba(159, 131, 131, 0.20);
+  border-radius: 1rem; /* ~rounded-2xl */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.10);
 }
 
 .nav-link {
-  @apply text-accent transition-colors px-3 py-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 cursor-pointer bg-transparent hover:bg-accent/30;
+  @apply text-main transition-colors px-3 py-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 cursor-pointer bg-transparent hover:bg-accent/30;
 }
 
 .btn-primary {
-  @apply bg-accent text-white font-medium px-4 py-2 rounded-xl hover:bg-accent/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40;
+  @apply bg-accent text-main font-medium px-4 py-2 rounded-xl hover:bg-accent/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40;
 }
 
 .btn-ghost {
@@ -26,7 +41,7 @@ body {
 }
 
 .input {
-  @apply w-full bg-white border border-black/10 rounded-xl px-3 py-2 text-accent placeholder-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/30;
+  @apply w-full bg-surface border border-black/10 rounded-xl px-3 py-2 text-accent placeholder-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/30;
 }
 
 .card {
@@ -34,11 +49,11 @@ body {
 }
 
 .heading {
-  @apply text-3xl md:text-4xl font-semibold tracking-tight text-accent;
+  @apply text-3xl md:text-4xl font-bold tracking-tight text-accent;
 }
 
 .subheading {
-  @apply text-accent/80;
+  @apply text-accent/80 font-medium;
 }
 
 
@@ -62,7 +77,186 @@ body {
 }
 
 .smooth-width {
-  transition: width 600ms ease-in-out;
+  transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* Styled file upload button */
+.file-btn {
+  border: none;
+  display: inline-flex;
+  padding: 0.75rem 1.5rem;
+  background-color: #574964;
+  color: #ffffff;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  text-transform: uppercase;
+  vertical-align: middle;
+  align-items: center;
+  border-radius: 0.5rem;
+  user-select: none;
+  gap: 0.75rem;
+  box-shadow:
+    0 4px 6px -1px #488aec31,
+    0 2px 4px -1px #488aec17;
+  transition: all 0.6s ease;
+}
+
+.file-btn:hover {
+  box-shadow:
+    0 10px 15px -3px #488aec4f,
+    0 4px 6px -2px #488aec17;
+}
+
+.file-btn:focus,
+.file-btn:active {
+  opacity: 0.85;
+  box-shadow: none;
+}
+
+.file-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* XP toast notification */
+.xp-toast-wrapper {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.xp-toast-card {
+  width: 330px;
+  height: 80px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: 10px 15px;
+  background-color: #ffffff;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 15px;
+  transform: translateY(-120%);
+  opacity: 0;
+  transition: transform 400ms ease, opacity 400ms ease;
+  pointer-events: auto;
+}
+
+.xp-toast-card.xp-show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.xp-wave {
+  position: absolute;
+  transform: rotate(90deg);
+  left: -31px;
+  top: 32px;
+  width: 80px;
+  fill: #04e4003a;
+}
+
+.xp-icon-container {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #04e40048;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+
+.xp-icon {
+  width: 17px;
+  height: 17px;
+  color: #269b24;
+}
+
+.xp-message-text-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  flex-grow: 1;
+}
+
+.xp-message-text,
+.xp-sub-text {
+  margin: 0;
+  cursor: default;
+}
+
+.xp-message-text {
+  color: #269b24;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.xp-sub-text {
+  font-size: 14px;
+  color: #555;
+}
+
+.xp-cross-icon {
+  width: 18px;
+  height: 18px;
+  color: #555;
+  cursor: pointer;
+}
+
+/* Generate button styles */
+.btn {
+  border: none;
+  display: inline-flex;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  background: #2E2536;
+  cursor: pointer;
+  transition: all 450ms ease-in-out;
+  white-space: nowrap;
+}
+
+.sparkle {
+  fill: #AAAAAA;
+  transition: all 800ms ease;
+}
+
+.text {
+  font-weight: 600;
+  color: #AAAAAA;
+  font-size: 0.775rem;
+}
+
+.btn:hover {
+  background: linear-gradient(0deg,#766A84,#574964);
+  box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.4),
+  inset 0px -4px 0px 0px rgba(0, 0, 0, 0.2),
+  0px 0px 0px 4px rgba(255, 255, 255, 0.2),
+  0px 0px 180px 0px #766A84;
+  transform: translateY(-2px);
+}
+
+.btn:hover .text {
+  color: white;
+}
+
+.btn:hover .sparkle {
+  fill: white;
+  transform: scale(1.2);
 }
 
 

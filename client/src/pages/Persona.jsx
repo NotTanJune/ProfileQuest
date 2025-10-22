@@ -15,6 +15,7 @@ export default function Persona() {
   const [avatar, setAvatar] = useState('');
   const [avatarTries, setAvatarTries] = useState(0); // max 3 (initial + 2)
   const [refImage, setRefImage] = useState(''); // data URL
+  const [toast, setToast] = useState({ visible: false, kind: 'info', title: '', subtitle: '' });
 
   async function generatePersona() {
     // Count only regenerations when a result already exists
@@ -63,7 +64,14 @@ export default function Persona() {
         console.warn('save persona/quests skipped', e?.message || e);
       }
     } catch (e) {
-      console.error(e);
+      const status = e?.response?.status;
+      if (status === 429) {
+        setToast({ visible: true, kind: 'error', title: 'Generation limit reached', subtitle: 'Please try again in 24 hours.' });
+        window.clearTimeout(window.__persona_toast_timer__);
+        window.__persona_toast_timer__ = window.setTimeout(() => setToast(t => ({ ...t, visible: false })), 3500);
+      } else {
+        console.error(e);
+      }
     } finally {
       setLoading(false);
     }
@@ -103,15 +111,35 @@ export default function Persona() {
 
   return (
     <motion.div className="mx-auto max-w-6xl px-4 py-8" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}>
+      {/* Error toast for generation limits */}
+      <div className="xp-toast-wrapper" aria-live="polite" aria-atomic="true">
+        <div className={`xp-toast-card ${toast.visible ? 'xp-show' : ''} ${toast.kind === 'error' ? 'xp-error' : ''}`} role="status">
+          <svg className="xp-wave" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,256L11.4,240C22.9,224,46,192,69,192C91.4,192,114,224,137,234.7C160,245,183,235,206,213.3C228.6,192,251,160,274,149.3C297.1,139,320,149,343,181.3C365.7,213,389,267,411,282.7C434.3,299,457,277,480,250.7C502.9,224,526,192,549,181.3C571.4,171,594,181,617,208C640,235,663,277,686,256C708.6,235,731,149,754,122.7C777.1,96,800,128,823,165.3C845.7,203,869,245,891,224C914.3,203,937,117,960,112C982.9,107,1006,181,1029,197.3C1051.4,213,1074,171,1097,144C1120,117,1143,107,1166,133.3C1188.6,160,1211,224,1234,218.7C1257.1,213,1280,139,1303,133.3C1325.7,128,1349,192,1371,192C1394.3,192,1417,128,1429,96L1440,64L1440,320L1428.6,320C1417.1,320,1394,320,1371,320C1348.6,320,1326,320,1303,320C1280,320,1257,320,1234,320C1211.4,320,1189,320,1166,320C1142.9,320,1120,320,1097,320C1074.3,320,1051,320,1029,320C1005.7,320,983,320,960,320C937.1,320,914,320,891,320C868.6,320,846,320,823,320C800,320,777,320,754,320C731.4,320,709,320,686,320C662.9,320,640,320,617,320C594.3,320,571,320,549,320C525.7,320,503,320,480,320C457.1,320,434,320,411,320C388.6,320,366,320,343,320C320,320,297,320,274,320C251.4,320,229,320,206,320C182.9,320,160,320,137,320C114.3,320,91,320,69,320C45.7,320,23,320,11,320L0,320Z" fillOpacity="1"></path>
+          </svg>
+          <div className="xp-icon-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" strokeWidth="0" fill="currentColor" stroke="currentColor" className="xp-icon">
+              <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 272c13.3 0 24 10.7 24 24s-10.7 24-24 24s-24-10.7-24-24s10.7-24 24-24zm-32-160c0-17.7 14.3-32 32-32s32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V160z"></path>
+            </svg>
+          </div>
+          <div className="xp-message-text-container">
+            <p className="xp-message-text">{toast.title}</p>
+            <p className="xp-sub-text">{toast.subtitle}</p>
+          </div>
+          <svg onClick={() => setToast(t => ({ ...t, visible: false }))} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15" strokeWidth="0" fill="none" stroke="currentColor" className="xp-cross-icon" role="button" aria-label="Dismiss notification">
+            <path fill="currentColor" d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" clipRule="evenodd" fillRule="evenodd"></path>
+          </svg>
+        </div>
+      </div>
       <h2 className="heading mb-4">Persona Builder</h2>
       {!result ? (
         <div className="card p-6">
           <div>
             <label htmlFor="currentRole" className="block text-base text-accent/80 mb-1">Current Role</label>
-            <input
+            <textarea
               id="currentRole"
-              type="text"
-              className="input text-sm"
+              rows="2"
+              className="input text-sm leading-6 resize-none md:rounded-full"
               placeholder="e.g., Frontend Developer, Student, Product Manager"
               value={currentRole}
               onChange={(e)=>setCurrentRole(e.target.value)}
@@ -236,29 +264,31 @@ export default function Persona() {
         </div>
       ) : (
         <div className="mx-auto w-full max-w-3xl">
-          <div className="card p-8 text-center">
+          <div className="card p-6 md:p-8 text-center">
             <h3 className="text-xl font-semibold">Your Persona & Avatar</h3>
             <div className="mt-3 space-y-2">
             {avatar && (
               <div className="mt-3 flex flex-col items-center justify-center">
-                <img src={avatar} alt="Avatar" width="512" height="512" className="w-64 h-64 md:w-80 md:h-80 rounded-xl object-cover border border-black/10" />
+                <img src={avatar} alt="Avatar" width="512" height="512" className="w-56 h-56 md:w-80 md:h-80 rounded-xl object-cover border border-black/10" />
                 <a
                   href={avatar}
                   download="avatar.png"
-                  className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white hover:bg-accentDark focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                  className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-accent text-main hover:bg-accentDark focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                  aria-label="Download avatar"
                 >
-                  Download Avatar
+                  <img src="/download.svg" alt="" className="h-5 w-5 md:hidden" />
+                  <span className="hidden md:inline">Download Avatar</span>
                 </a>
               </div>
             )}
             <div className="text-2xl font-semibold">{result.persona_type}</div>
             <div className="text-accent/80">Logic {result.attributes.logic} • Creativity {result.attributes.creativity} • Communication {result.attributes.communication}</div>
             
-            <div className="mt-3 text-left flex items-center justify-between">
-              <div className="text-accent font-medium mb-1">Starting Quests</div>
-              <a href="/dashboard" className="btn-primary">Begin your Journey!</a>
+            <div className="mt-3 text-left flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-accent font-medium mb-1 sm:mb-0">Starting Quests</div>
+              <a href="/dashboard" className="btn-primary self-start">Begin your Journey!</a>
             </div>
-            <div>
+            <div className="mt-1">
               <ul className="list-disc pl-5 text-accent/80 text-left">
                 {(result.starting_quests || []).map((q, i)=> (
                   <li key={i}>{q.title || 'Quest'}</li>

@@ -36,6 +36,7 @@ export default function Dashboard() {
   const prevProgressRef = useRef(null);
   const timersRef = useRef([]);
   const initialLoadRef = useRef(true);
+  const [isNarrow, setIsNarrow] = useState(false);
   const DASH_LIMIT = 5;
   const noQuests = !loadingQuests && (recentQuests?.length ?? 0) === 0;
 
@@ -70,6 +71,26 @@ export default function Dashboard() {
     loadQuests();
     return () => { isMounted = false; };
   }, [user?.id]);
+
+  // Track viewport width to adjust chart axis labels on narrow screens
+  useEffect(() => {
+    function updateViewportFlag() {
+      try {
+        setIsNarrow(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+      } catch {
+        setIsNarrow(false);
+      }
+    }
+    updateViewportFlag();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateViewportFlag);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateViewportFlag);
+      }
+    };
+  }, []);
 
   // XP history fetcher for chart
   useEffect(() => {
@@ -370,8 +391,8 @@ export default function Dashboard() {
         )}
         {personaLoaded && persona ? (
           <div className="card">
-            <div className="md:grid md:grid-cols-[auto,minmax(0,260px),1fr] md:items-start md:gap-6">
-              <div>
+            <div className="md:grid md:grid-cols-[minmax(0,1fr),minmax(0,260px),minmax(0,1fr)] md:items-start md:gap-6">
+              <div className="min-w-0">
                 <h3 className="text-xl font-semibold flex items-center gap-2"><img src="/journey.svg" alt="" aria-hidden="true" width="20" height="20" className="h-5 w-5" />{displayName}'s Journey</h3>
                 <p className="subheading mt-2 md:hidden">Complete quests to earn XP and level up. Your journey charts progress and milestones as you grow.</p>
                 {avatar && (
@@ -384,7 +405,7 @@ export default function Dashboard() {
               <div className="hidden md:block md:px-2">
                 <p className="subheading">Complete quests to earn XP and level up. Your journey charts progress and milestones as you grow.</p>
               </div>
-              <div className="mt-6 md:mt-0">
+              <div className="mt-6 md:mt-0 min-w-0">
                 <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                   <div className="text-sm text-accent/70">XP over time</div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -405,9 +426,18 @@ export default function Dashboard() {
                 {xpSeries.some(p => p.xp > 0) ? (
                   <div className="mt-2 h-56">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={xpSeries} margin={{ top: 10, right: 24, bottom: 12, left: 28 }}>
+              <LineChart data={xpSeries} margin={isNarrow ? { top: 10, right: 12, bottom: 64, left: 28 } : { top: 10, right: 24, bottom: 12, left: 28 }}>
                         <CartesianGrid stroke="rgba(87,73,100,0.25)" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} interval={0} padding={{ left: 8, right: 8 }} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: '#574964', fontSize: 12 }}
+                  tickMargin={8}
+                  interval={0}
+                  padding={{ left: 8, right: 8 }}
+                  angle={isNarrow ? -90 : 0}
+                  textAnchor={isNarrow ? 'end' : 'middle'}
+                  height={isNarrow ? 70 : undefined}
+                />
                         <YAxis tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} allowDecimals={false} width={46} />
                         <Tooltip
                           cursor={{ stroke: 'rgba(255,218,179,0.35)', strokeWidth: 1 }}
@@ -430,8 +460,8 @@ export default function Dashboard() {
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             <div className="card">
-              <div className="md:grid md:grid-cols-[auto,minmax(0,260px),1fr] md:items-start md:gap-6">
-                <div>
+              <div className="md:grid md:grid-cols-[minmax(0,1fr),minmax(0,260px),minmax(0,1fr)] md:items-start md:gap-6">
+                <div className="min-w-0">
                   <h3 className="text-xl font-semibold flex items-center gap-2"><img src="/journey.svg" alt="" aria-hidden="true" width="20" height="20" className="h-5 w-5" />{displayName}'s Journey</h3>
                   <p className="subheading mt-2 md:hidden">Complete quests to earn XP and level up. Your journey charts progress and milestones as you grow.</p>
                   {avatar && (
@@ -446,7 +476,7 @@ export default function Dashboard() {
                 <div className="hidden md:block md:px-2">
                   <p className="subheading">Complete quests to earn XP and level up. Your journey charts progress and milestones as you grow.</p>
                 </div>
-                <div className="mt-6 md:mt-0">
+                <div className="mt-6 md:mt-0 min-w-0">
                   <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <div className="text-sm text-accent/70">XP over time</div>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -467,9 +497,18 @@ export default function Dashboard() {
                   {xpSeries.some(p => p.xp > 0) ? (
                     <div className="mt-2 h-56">
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={xpSeries} margin={{ top: 10, right: 24, bottom: 12, left: 28 }}>
+                        <LineChart data={xpSeries} margin={isNarrow ? { top: 10, right: 12, bottom: 64, left: 28 } : { top: 10, right: 24, bottom: 12, left: 28 }}>
                           <CartesianGrid stroke="rgba(87,73,100,0.25)" vertical={false} />
-                          <XAxis dataKey="name" tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} interval={0} padding={{ left: 8, right: 8 }} />
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fill: '#574964', fontSize: 12 }}
+                            tickMargin={8}
+                            interval={0}
+                            padding={{ left: 8, right: 8 }}
+                            angle={isNarrow ? -90 : 0}
+                            textAnchor={isNarrow ? 'end' : 'middle'}
+                            height={isNarrow ? 70 : undefined}
+                          />
                           <YAxis tick={{ fill: '#574964', fontSize: 12 }} tickMargin={8} allowDecimals={false} width={46} />
                         <Tooltip
                           cursor={{ stroke: 'rgba(255,218,179,0.35)', strokeWidth: 1 }}

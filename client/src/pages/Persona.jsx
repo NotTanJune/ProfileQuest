@@ -37,6 +37,8 @@ export default function Persona() {
       if (!apiBase) {
         apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       }
+      let token = '';
+      try { token = localStorage.getItem('pq_token') || ''; } catch {}
       const res = await axios.post(`${apiBase}/api/persona/generate`, {
         currentRole,
         proficiency,
@@ -44,7 +46,7 @@ export default function Persona() {
         strengths,
         goals,
         imageBase64: refImage || ''
-      });
+      }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
       const persona = res.data?.persona || { persona_type: 'Adventurer', attributes: { logic: 5, creativity: 5, communication: 5 } };
       const starting_quests = Array.isArray(res.data?.quests) ? res.data.quests.slice(0, 3) : [];
 
@@ -86,14 +88,13 @@ export default function Persona() {
       if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
       if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
       const promptMeta = { currentRole, proficiency, interests, strengths, goals };
-      const r = await axios.post(`${apiBase}/api/persona/generate`, {
-        currentRole,
-        proficiency,
-        interests,
-        strengths,
-        goals,
+      let token = '';
+      try { token = localStorage.getItem('pq_token') || ''; } catch {}
+      const r = await axios.post(`${apiBase}/api/avatar/generate`, {
+        userId: user?.id || 'local-user',
+        promptMeta,
         imageBase64: refImage || ''
-      });
+      }, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
       const img = r.data?.image || '';
       const avatarImg = r.data?.avatar || img;
       if (avatarImg) setAvatar(avatarImg);

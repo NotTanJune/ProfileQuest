@@ -1,6 +1,6 @@
 # Profile Quest 🎮
 
-## 🚀 Check it out - https://profilequest-3feeae1dd6a1.herokuapp.com 
+## 🚀 Check it out - https://profile-quest-nottanjune-tanmays-projects-01b4bb4f.vercel.app 
 
 ## Overview
 

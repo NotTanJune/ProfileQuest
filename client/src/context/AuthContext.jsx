@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
+import { getApiBase } from '../utils/getApiBase.js';
 
 const AuthContext = createContext(null);
 
@@ -9,13 +10,9 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null); // {name, level, xp}
 
   useEffect(() => {
-    function getApiBase() {
-      try { return import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      return (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-    }
     async function loadMe(token) {
       try {
-        const apiBase = getApiBase() || 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+        const apiBase = getApiBase();
         const res = await axios.get(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
         const u = res.data?.user || null;
         if (!u) return null;
@@ -73,7 +70,7 @@ export function AuthProvider({ children }) {
   async function refreshSession() {
     const token = localStorage.getItem('pq_token');
     if (!token) { setSession(null); return null; }
-    const apiBase = (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_BASE_URL || '') : '') || (typeof process !== 'undefined' ? (process.env?.VITE_API_BASE_URL || '') : '') || 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+    const apiBase = getApiBase();
     try {
       const res = await axios.get(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       const u = res.data?.user || null;
@@ -92,5 +89,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
-
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import { motion } from 'framer-motion';
+import { getApiBase } from '../utils/getApiBase.js';
 
 export default function Profile() {
   const { user,profile } = useAuth();
@@ -15,11 +16,7 @@ export default function Profile() {
     async function load() {
       if (!user?.id) return;
       try {
-        let apiBase = '';
-        try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-        if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-        if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+        const apiBase = getApiBase();
         const res = await axios.get(`${apiBase}/api/progress`, { params: { userId: user.id } });
         if (!isMounted) return;
         const p = res.data?.progress || {};
@@ -47,11 +44,7 @@ export default function Profile() {
           const cached = JSON.parse(localStorage.getItem('pq_persona') || 'null');
           if (cached) { setPersona(cached); setAvatar(cached.avatar || ''); }
         } catch {}
-        let apiBase = '';
-        try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-        if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-        if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+        const apiBase = getApiBase();
         const res = await axios.get(`${apiBase}/api/persona`, { params: { userId: user.id } });
         if (!isMounted) return;
         const remote = res.data?.persona || null;
@@ -116,5 +109,4 @@ export default function Profile() {
     </motion.div>
   );
 }
-
 

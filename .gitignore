@@ -14,3 +14,4 @@ yarn-error.log*
 /.agent-tools/
 /.vscode/
 .github/
+.vercel

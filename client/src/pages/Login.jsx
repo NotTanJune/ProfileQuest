@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { getApiBase } from '../utils/getApiBase.js';
 
 export default function Login() {
   const { user, loading, refreshSession } = useAuth();
@@ -24,17 +25,12 @@ export default function Login() {
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
-  function getApiBase() {
-    try { return import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-    return (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setSuccess('');
     try {
-      const apiBase = getApiBase() || 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       if (mode === 'login') {
         const r = await axios.post(`${apiBase}/api/auth/login`, { email, password });
         const token = r.data?.token;
@@ -161,5 +157,4 @@ export default function Login() {
     </motion.div>
   );
 }
-
 

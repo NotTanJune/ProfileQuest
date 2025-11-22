@@ -14,8 +14,7 @@
     "client": "yarn workspace profilequest-client dev",
     "build": "yarn workspace profilequest-client build",
     "start": "node server/index.js",
-    "heroku-postbuild": "yarn workspace profilequest-client build",
-    "postinstall": "echo 'Skipping postinstall'"
+    "vercel-build": "yarn workspace profilequest-client build"
   },
   "dependencies": {},
   "devDependencies": {

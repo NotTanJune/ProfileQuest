@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import { motion } from 'framer-motion';
+import { getApiBase } from '../utils/getApiBase.js';
 
 export default function Quests() {
   const [quests, setQuests] = useState([]);
@@ -15,12 +16,7 @@ useEffect(() => {
   async function fetchQuests() {
     try {
       if (!user?.id) return; // wait for user id
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
-
+      const apiBase = getApiBase();
       const resAvail = await axios.get(`${apiBase}/api/quests`, { params: { userId: user.id, status: 'available' } });
       if (!isMounted) return;
       const available = resAvail.data?.quests || [];
@@ -37,11 +33,7 @@ useEffect(() => {
 
   async function completeQuest(q) {
     try {
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       const userId = user?.id || 'local-user';
       const res = await axios.post(`${apiBase}/api/quests/complete`, { userId, title: q.title, xpReward: q.xp_reward });
       const prof = res.data?.profile;
@@ -64,11 +56,7 @@ useEffect(() => {
 
   async function deleteQuest(title) {
     try {
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       const userId = user?.id || 'local-user';
       await axios.post(`${apiBase}/api/quests/delete`, { userId, title });
       setQuests(list => list.filter(q => q.title !== title));
@@ -82,11 +70,7 @@ useEffect(() => {
       // Guard: only allow generating when there are zero available quests
       if ((quests?.length || 0) !== 0) return;
       setRefreshing(true);
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       const userId = user?.id || 'local-user';
       const personaRes = await axios.get(`${apiBase}/api/persona`, { params: { userId } });
       const personaType = personaRes.data?.persona?.persona_type || 'Software Developer';
@@ -197,5 +181,4 @@ useEffect(() => {
     </motion.div>
   );
 }
-
 

@@ -1,12 +1,20 @@
 import path from 'path';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { createRequire } from 'module';
 import webpack from 'webpack';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import dotenv from 'dotenv';
+
+const require = createRequire(import.meta.url);
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const dotenv = require('dotenv');
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const faviconSvgPath = path.resolve(__dirname, 'public', 'favicon.svg');
+const devProxyTarget =
+  process.env.VITE_DEV_PROXY ||
+  process.env.VITE_API_BASE_URL ||
+  'https://profile-quest-puce.vercel.app';
 
 export default {
   entry: './src/index.jsx',
@@ -37,11 +45,19 @@ export default {
     proxy: [
       {
         context: ['/api'],
-        target: 'https://profilequest-3feeae1dd6a1.herokuapp.com',
+        target: devProxyTarget,
         changeOrigin: true,
         secure: false
       }
-    ]
+    ],
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer?.app) return middlewares;
+      devServer.app.get('/favicon.ico', (_req, res) => {
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.sendFile(faviconSvgPath);
+      });
+      return middlewares;
+    }
   },
   module: {
     rules: [
@@ -78,9 +94,7 @@ export default {
       ]
     }),
     new webpack.DefinePlugin({
-      'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || 'https://profilequest-3feeae1dd6a1.herokuapp.com')
+      'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || '')
     })
   ]
 };
-
-

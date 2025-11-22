@@ -15,6 +15,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const app = express();
+
+// Trust proxy - required for Vercel and other serverless platforms
+app.set('trust proxy', 1);
+
 const BASE_PORT = parseInt(process.env.PORT || '5000', 10);
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/profilequest';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
@@ -43,12 +47,46 @@ const expensiveSpeed = slowDown({ windowMs: 60 * 1000, delayAfter: 20, delayMs: 
 // Targeted rate limiter for generation endpoints
 const genLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
 
-// MongoDB connection
+// MongoDB connection with serverless-friendly settings
 mongoose.set('strictQuery', true);
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error', err));
+
+// Connection state for serverless environments
+let cachedDb = null;
+
+async function connectDB() {
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    return cachedDb;
+  }
+  
+  try {
+    console.log('Attempting MongoDB connection...');
+    const db = await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
+    cachedDb = db;
+    console.log('MongoDB connected successfully');
+    return db;
+  } catch (err) {
+    console.error('MongoDB connection error:', err.message);
+    cachedDb = null;
+    throw err;
+  }
+}
+
+// Middleware to ensure DB connection before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Failed to connect to database:', err.message);
+    res.status(503).json({ 
+      error: 'Database connection failed',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
 
 // Schemas & Models
 const UserSchema = new mongoose.Schema({
@@ -844,7 +882,7 @@ Make sure it looks like a unicode emoji`;
 function attemptListen(port, maxAttempts = 5) {
   const server = app
     .listen(port, () => {
-      console.log(`ProfileQuest API listening on https://profilequest-3feeae1dd6a1.herokuapp.com:${port}`);
+      console.log(`ProfileQuest API listening on https://profile-quest-tanmays-projects-01b4bb4f.vercel.app:${port}`);
     })
     .on('error', (err) => {
       if (err.code === 'EADDRINUSE' && maxAttempts > 0) {
@@ -858,22 +896,26 @@ function attemptListen(port, maxAttempts = 5) {
   return server;
 }
 
-// Serve client build (SPA) in production
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientDist = path.resolve(__dirname, '..', 'client', 'dist');
-app.use(express.static(clientDist));
 
-// Fallback to index.html for client-side routed paths
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found' });
-  try {
-    return res.sendFile(path.join(clientDist, 'index.html'));
-  } catch {
-    return res.status(404).send('Not found');
-  }
-});
+if (!process.env.VERCEL) {
+  // For local development, serve client build and start server
+  app.use(express.static(clientDist));
 
-attemptListen(BASE_PORT);
+  // Fallback to index.html for client-side routed paths
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found' });
+    try {
+      return res.sendFile(path.join(clientDist, 'index.html'));
+    } catch {
+      return res.status(404).send('Not found');
+    }
+  });
 
+  attemptListen(BASE_PORT);
+}
+
+export default app;
 

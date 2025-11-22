@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { getApiBase } from '../utils/getApiBase.js';
 
 function XPBar({ pct, currentXP, nextLevelXP, noAnim }) {
   const renderPct = Math.max(0, Math.min(100, Number(pct || 0)));
@@ -45,11 +46,7 @@ export default function Dashboard() {
     async function loadQuests() {
       if (!user?.id) { setLoadingQuests(false); return; }
       try {
-        let apiBase = '';
-        try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-        if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-        if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+        const apiBase = getApiBase();
         const res = await axios.get(`${apiBase}/api/quests`, { params: { userId: user.id, status: 'available' } });
         if (!isMounted) return;
         const qs = (res.data?.quests || []).slice(0, DASH_LIMIT);
@@ -99,11 +96,7 @@ export default function Dashboard() {
       if (!user?.id) return;
       setXpLoading(true);
       try {
-        let apiBase = '';
-        try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-        if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-        if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+        const apiBase = getApiBase();
         const res = await axios.get(`${apiBase}/api/xp/history`, { params: { userId: user.id, range: xpRange } });
         if (!isMounted) return;
         const buckets = Array.isArray(res.data?.buckets) ? res.data.buckets : [];
@@ -180,11 +173,7 @@ export default function Dashboard() {
           const cached = JSON.parse(localStorage.getItem('pq_persona') || 'null');
           if (cached) { setPersona(cached); setAvatar(cached.avatar || ''); setPersonaLoaded(true); }
         } catch {}
-        let apiBase = '';
-        try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-        if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-        if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+        const apiBase = getApiBase();
         const res = await axios.get(`${apiBase}/api/persona`, { params: { userId: user.id } });
         if (!isMounted) return;
         const remote = res.data?.persona || null;
@@ -207,11 +196,7 @@ export default function Dashboard() {
     async function loadProgress() {
       if (!user?.id) return;
       try {
-        let apiBase = '';
-        try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-        if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-        if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-        if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+        const apiBase = getApiBase();
         const res = await axios.get(`${apiBase}/api/progress`, { params: { userId: user.id } });
         if (!isMounted) return;
         const p = res.data?.progress || {};
@@ -234,11 +219,7 @@ export default function Dashboard() {
 
   async function completeQuestInline(q) {
     try {
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       const res = await axios.post(`${apiBase}/api/quests/complete`, { userId: user?.id, title: q.title, xpReward: q.xp_reward });
       const newProf = res.data?.profile;
       if (newProf) {
@@ -257,11 +238,7 @@ export default function Dashboard() {
 
   async function refillRecent() {
     try {
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       const res = await axios.get(`${apiBase}/api/quests`, { params: { userId: user?.id, status: 'available' } });
       const next = (res.data?.quests || []).slice(0, DASH_LIMIT);
       setRecentQuests(next);
@@ -278,11 +255,7 @@ export default function Dashboard() {
 
   async function generateMoreFromDashboard() {
     try {
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       const personaRes = await axios.get(`${apiBase}/api/persona`, { params: { userId: user?.id } });
       const personaType = personaRes.data?.persona?.persona_type || 'Software Developer';
       let level = 1;
@@ -311,11 +284,7 @@ export default function Dashboard() {
 
   async function deleteQuestInline(q) {
     try {
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       await axios.post(`${apiBase}/api/quests/delete`, { userId: user?.id, title: q.title });
       setRecentQuests(list => list.filter(item => item.title !== q.title));
       const remaining = recentQuests.filter(item => item.title !== q.title).length;
@@ -542,5 +511,4 @@ export default function Dashboard() {
     </motion.div>
   );
 }
-
 

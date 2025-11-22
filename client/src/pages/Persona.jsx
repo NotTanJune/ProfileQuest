@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import { motion } from 'framer-motion';
+import { getApiBase } from '../utils/getApiBase.js';
 
 export default function Persona() {
   const { user } = useAuth();
@@ -24,19 +25,7 @@ export default function Persona() {
     setLoading(true);
     setResult(null);
     try {
-      let apiBase = '';
-      try {
-        apiBase = import.meta?.env?.VITE_API_BASE_URL || '';
-      } catch {}
-      if (!apiBase) {
-        apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      }
-      if (!apiBase && typeof window !== 'undefined') {
-        apiBase = window.__API_BASE_URL__ || '';
-      }
-      if (!apiBase) {
-        apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
-      }
+      const apiBase = getApiBase();
       let token = '';
       try { token = localStorage.getItem('pq_token') || ''; } catch {}
       const res = await axios.post(`${apiBase}/api/persona/generate`, {
@@ -82,11 +71,7 @@ export default function Persona() {
   async function generateAvatar() {
     if (avatarTries >= 3) return;
     try {
-      let apiBase = '';
-      try { apiBase = import.meta?.env?.VITE_API_BASE_URL || ''; } catch {}
-      if (!apiBase) apiBase = (typeof process !== 'undefined' ? process?.env?.VITE_API_BASE_URL : '') || '';
-      if (!apiBase && typeof window !== 'undefined') apiBase = window.__API_BASE_URL__ || '';
-      if (!apiBase) apiBase = 'https://profilequest-3feeae1dd6a1.herokuapp.com';
+      const apiBase = getApiBase();
       const promptMeta = { currentRole, proficiency, interests, strengths, goals };
       let token = '';
       try { token = localStorage.getItem('pq_token') || ''; } catch {}
@@ -307,5 +292,4 @@ export default function Persona() {
     </motion.div>
   );
 }
-
 

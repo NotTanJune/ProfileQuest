@@ -1,6 +1,6 @@
 # Profile Quest 🎮
 
-## 🚀 Check it out - https://profile-quest-nottanjune-tanmays-projects-01b4bb4f.vercel.app 
+## 🚀 Check it out - [https://profile-quest-nottanjune-tanmays-projects-01b4bb4f.vercel.app](https://profile-quest-puce.vercel.app/) 
 
 ## Overview
 
